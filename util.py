@@ -1,6 +1,7 @@
 import os
 import argparse
 import yaml
+import torch
 from torchvision.utils import save_image
 
 def mkdir_if_not_exists(path):
@@ -22,3 +23,9 @@ def load_config(path):
         config = yaml.safe_load(f)
     config = dict2namespace(config)
     return config
+
+def load_model(model, ckpt_path, device):
+    ckpt = torch.load(ckpt_path, map_location=device)
+    model.load_state_dict(ckpt)
+    model.to(device)
+    model.eval()
