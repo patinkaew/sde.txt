@@ -18,7 +18,8 @@ def main():
     config_path = 'config_yml/celeba.yml'
     ckpt_path = 'model_ckpt/celeba_hq.ckpt'
     save_path = 'result/celeba-det-0'
-    log_every = 50
+    batch_size = 10
+    log_every = 100
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     # sampler = diff.sample_stochastic_step
     sampler = diff.sample_deterministic_step
@@ -43,13 +44,12 @@ def main():
     print('Start sampling...')
 
     # Sampling
-    x = torch.randn(1, config.data.channels, 
+    x = torch.randn(batch_size, config.data.channels, 
                     config.data.image_size, config.data.image_size, device=device)
     for t in reversed(range(num_time_steps)):
-        if not (t + 1) % log_every:
+        if not t % log_every:
             print('Time step {}'.format(t))
-            torch.save(x, os.path.join(save_path, '{}.pt'.format(t)))
-            util.save_image(x, os.path.join(save_path, '{}.png'.format(t)))
+            util.save_image_batch(x, save_path, t)
         x = sampler(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], betas[t], std[t], ones)
 
 if __name__ == '__main__':

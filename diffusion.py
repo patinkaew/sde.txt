@@ -6,16 +6,8 @@ Adapted from
 """
 
 
-import os
-
 import numpy as np
 import torch
-from torchvision.utils import save_image
-
-import argparse
-import yaml
-
-from model import Model
 
 def get_beta_schedule(beta_start, beta_end, num_diffusion_timesteps):
     betas = np.linspace(beta_start, beta_end,

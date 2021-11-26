@@ -29,3 +29,9 @@ def load_model(model, ckpt_path, device):
     model.load_state_dict(ckpt)
     model.to(device)
     model.eval()
+
+def save_image_batch(image_batch, save_path, t):
+    batch_size = image_batch.shape[0]
+    for i in range(batch_size):
+        mkdir_if_not_exists(os.path.join(save_path, str(i)))
+        save_image(image_batch[i], os.path.join(save_path, str(i), '{}.png'.format(t)))
