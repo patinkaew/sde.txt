@@ -48,7 +48,7 @@ def get_noise_schedule(config, device):
 
     return betas, alphas_cumprod, alphas_cumprod_prev, logvar, num_time_steps
 
-def sample_stochastic_step(x, model, t, alpha_bar, alpha_bar_prev, beta, std):
+def sample_stochastic_step(x, model, t, alpha_bar, alpha_bar_prev, beta, std, ones):
     """
     Sample according to equation (3) in DiffusionCLIP.
         https://arxiv.org/abs/2110.02711
@@ -58,12 +58,12 @@ def sample_stochastic_step(x, model, t, alpha_bar, alpha_bar_prev, beta, std):
 
     TODO Ensure that our noise parameters match notations in the paper.
     """
-    eps = model(x, t * torch.tensor([1.]))
+    eps = model(x, t * ones)
     mean = x - beta / (1 - alpha_bar).sqrt() * eps
     x = mean / (1 - beta).sqrt() + std * torch.randn_like(x)
     return x
 
-def sample_deterministic_step(x, model, t, alpha_bar, alpha_bar_prev, beta, std):
+def sample_deterministic_step(x, model, t, alpha_bar, alpha_bar_prev, beta, std, ones):
     """
     Sample according to equation (5) in DiffusionCLIP.
         https://arxiv.org/abs/2110.02711
@@ -71,7 +71,7 @@ def sample_deterministic_step(x, model, t, alpha_bar, alpha_bar_prev, beta, std)
     Note: This is the DDIM sampling procedure.
         https://arxiv.org/abs/2010.02502
     """
-    eps = model(x, t * torch.tensor([1.]))
+    eps = model(x, t * ones)
     mean = x - (1 - alpha_bar).sqrt() * eps
     mean = (alpha_bar_prev / alpha_bar).sqrt() * mean
     x = mean + (1 - alpha_bar_prev).sqrt() * eps
