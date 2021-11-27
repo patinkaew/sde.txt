@@ -1,5 +1,5 @@
 """
-Sampling from DDPM without text guidance.
+Sampling from DDPM with stochastic inverse process.
 """
 
 import os
@@ -11,7 +11,6 @@ import diffusion as diff
 from model import Model
 import util
 
-@torch.no_grad()
 def main():
 
     # Arguments
@@ -32,13 +31,10 @@ def main():
 
     # Set up parameters
     config = util.load_config(config_path)
-    config.diffusion.num_diffusion_timesteps = 200
-    print(config.diffusion)
-    raise NotImplementedError
     betas, alphas_cumprod, alphas_cumprod_prev, \
         logvar, num_time_steps = diff.get_noise_schedule(config, device)
     std = torch.exp(0.5 * logvar)
-    ones = torch.ones(batch_size)
+    ones = torch.tensor([1.], device=device)
     
     # Load model
     model = Model(config)
