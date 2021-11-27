@@ -322,5 +322,160 @@ def main4():
     util.save_image_batch(x_guided, save_path, 'final', save_tensor=True)
 
 
+def main5():
+    
+    # Arguments
+    text = "tanned"
+    pinned_time_step = 200
+    image_load_path = 'result/cond-celeba-det-0/0/{}.pt'.format(pinned_time_step)
+    guide_lr = 1e-6
+    config_path = 'config_yml/celeba.yml'
+    ckpt_path = 'model_ckpt/celeba_hq.ckpt'
+    save_path = 'result/cond-celeba-det-0-gui'
+    batch_size = 1
+    log_every = 20
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    sampler = diff.sample_deterministic_step
+
+    print('Device: {}'.format(device))
+    print('Set up...')
+
+    util.mkdir_if_not_exists(save_path)
+
+    # Set up parameters
+    config = util.load_config(config_path)
+    betas, alphas_cumprod, alphas_cumprod_prev, \
+        logvar, num_time_steps = diff.get_noise_schedule(config, device)
+    std = torch.exp(0.5 * logvar)
+    ones = torch.ones(batch_size, device=device)
+    
+    # Load diffusion model
+    model = Model(config)
+    util.load_model(model, ckpt_path, device)
+    util.turn_off_model_requires_grad(model)
+    print_cuda_memory()
+
+    # Load CLIP model
+    clip_model, _ = clip.load("ViT-B/32")
+
+    n_px = 224 #clip_model.input_resolution.item()
+    clip_preprocess = transforms.Compose([
+        transforms.Resize(n_px, interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.CenterCrop(n_px),
+        transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
+    ]) #unsure, original assume PIL Image, here I removed convert_to_RGB and toTensor
+    
+    clip_model = clip_model.eval()
+    util.turn_off_model_requires_grad(clip_model)
+    text_feature = clip.tokenize([text]).to(device=device)
+    text_encoding = clip_model.encode_text(text_feature).detach().clone()
+    print_cuda_memory()
+    
+    # Load saved noisy image
+    x = torch.load(image_load_path).unsqueeze(0)
+    
+    print('Start guiding generation with CLIP...')
+    
+    # Sampling with guiding
+    for t in tqdm(reversed(range(pinned_time_step)), total=pinned_time_step):
+        x.requires_grad = True
+        x_unguided = sampler(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+        image_encoding = clip_model.encode_image(clip_preprocess(x_unguided))
+        clip_loss = 1 - F.cosine_similarity(image_encoding, text_encoding)
+        clip_loss.backward()
+        x_nudged = (x - guide_lr * x.grad).detach() # can use torch optim and call many steps here
+        x = sampler(x_nudged, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+        
+        if not t % log_every:
+            print('Saving at guiding step {}'.format(t))
+            util.save_image_batch(x, save_path, '{}_guided'.format(t), save_tensor=True)
+        
+    util.save_image_batch(x, save_path, 'final', save_tensor=True)
+
+
+def main6():
+    """
+    Guiding by CLIP at every step since beginning
+    """
+    
+    torch.manual_seed(0)
+    
+    # Learning rate arguments
+    lr_init = 1e-6
+    lr_step = 50
+    lr_multiplier = 1.2
+    nudge_every = 10
+    
+    # Arguments
+    text = "blond white woman"
+    config_path = 'config_yml/celeba.yml'
+    ckpt_path = 'model_ckpt/celeba_hq.ckpt'
+    save_path = 'result/cond-celeba-4'
+    batch_size = 1
+    log_every = 50
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    sampler = diff.sample_deterministic_step
+
+    print('Device: {}'.format(device))
+    print('Set up...')
+
+    util.mkdir_if_not_exists(save_path)
+
+    # Set up parameters
+    config = util.load_config(config_path)
+    betas, alphas_cumprod, alphas_cumprod_prev, \
+        logvar, num_time_steps = diff.get_noise_schedule(config, device)
+    ones = torch.ones(batch_size, device=device)
+    
+    # Load diffusion model
+    model = Model(config)
+    util.load_model(model, ckpt_path, device)
+    util.turn_off_model_requires_grad(model)
+    print_cuda_memory()
+
+    # Load CLIP model
+    clip_model, _ = clip.load("ViT-B/32")
+
+    n_px = 224 #clip_model.input_resolution.item()
+    clip_preprocess = transforms.Compose([
+        transforms.Resize(n_px, interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.CenterCrop(n_px),
+        transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
+    ]) #unsure, original assume PIL Image, here I removed convert_to_RGB and toTensor
+    
+    clip_model = clip_model.eval()
+    util.turn_off_model_requires_grad(clip_model)
+    text_feature = clip.tokenize([text]).to(device=device)
+    text_encoding = clip_model.encode_text(text_feature).detach().clone()
+    print_cuda_memory()
+    
+    print('Start CLIP-guided generation...')
+    
+    # Sampling with guiding
+    x = torch.randn(batch_size, config.data.channels, 
+                    config.data.image_size, config.data.image_size, device=device)
+    guide_lr = lr_init
+    for t in tqdm(reversed(range(num_time_steps)), total=num_time_steps):
+        if not t % nudge_every:
+            x.requires_grad = True
+            x_unguided = sampler(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+            image_encoding = clip_model.encode_image(clip_preprocess(x_unguided))
+            clip_loss = 1 - F.cosine_similarity(image_encoding, text_encoding)
+            clip_loss.backward()
+            x_nudged = (x - guide_lr * x.grad).detach() # can use torch optim and call many steps here
+            x = sampler(x_nudged, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+        else:
+            x = sampler(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+        
+        if not t % log_every:
+            print('Saving at guiding step {}, CLIP loss = {}'.format(t, clip_loss))
+            util.save_image_batch(x, save_path, '{}_guided'.format(t), save_tensor=True)
+        
+        if not (t + 1) % lr_step:
+            guide_lr *= lr_multiplier
+        
+    util.save_image_batch(x, save_path, 'final', save_tensor=True)
+
+
 if __name__ == '__main__':
-    main4()
+    main6()
