@@ -30,8 +30,15 @@ def load_model(model, ckpt_path, device):
     model.to(device)
     model.eval()
 
-def save_image_batch(image_batch, save_path, t):
+def save_image_batch(image_batch, save_path, t, save_tensor=False):
     batch_size = image_batch.shape[0]
     for i in range(batch_size):
         mkdir_if_not_exists(os.path.join(save_path, str(i)))
         save_image(image_batch[i], os.path.join(save_path, str(i), '{}.png'.format(t)))
+        if save_tensor:
+            torch.save(image_batch[i], os.path.join(save_path, str(i), '{}.pt'.format(t)))
+
+
+def turn_off_model_requires_grad(model):
+    for param in model.parameters():
+        param.requires_grad = False

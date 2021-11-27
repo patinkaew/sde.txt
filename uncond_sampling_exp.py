@@ -17,8 +17,8 @@ def main():
     # Arguments
     config_path = 'config_yml/celeba.yml'
     ckpt_path = 'model_ckpt/celeba_hq.ckpt'
-    save_path = 'result/celeba-det-0'
-    batch_size = 10
+    save_path = 'result/celeba-det-2'
+    batch_size = 5
     log_every = 100
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     # sampler = diff.sample_stochastic_step
@@ -32,13 +32,11 @@ def main():
 
     # Set up parameters
     config = util.load_config(config_path)
-    config.diffusion.num_diffusion_timesteps = 200
-    print(config.diffusion)
-    raise NotImplementedError
+    # config.diffusion.num_diffusion_timesteps = 200
     betas, alphas_cumprod, alphas_cumprod_prev, \
         logvar, num_time_steps = diff.get_noise_schedule(config, device)
-    std = torch.exp(0.5 * logvar)
-    ones = torch.ones(batch_size)
+    std = torch.exp(0.5 * logvar) # only for stochastic sampling
+    ones = torch.ones(batch_size, device=device)
     
     # Load model
     model = Model(config)
@@ -53,7 +51,7 @@ def main():
         if not t % log_every:
             print('Time step {}'.format(t))
             util.save_image_batch(x, save_path, t)
-        x = sampler(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], betas[t], std[t], ones)
+        x = sampler(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
 
 if __name__ == '__main__':
     main()
