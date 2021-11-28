@@ -21,8 +21,7 @@ def main():
     batch_size = 5
     log_every = 100
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    # sampler = diff.sample_stochastic_step
-    sampler = diff.sample_deterministic_step
+    sampling_method = 'sto'
 
     print('Device: {}'.format(device))
     print('Set up...')
@@ -32,7 +31,6 @@ def main():
 
     # Set up parameters
     config = util.load_config(config_path)
-    # config.diffusion.num_diffusion_timesteps = 200
     betas, alphas_cumprod, alphas_cumprod_prev, \
         logvar, num_time_steps = diff.get_noise_schedule(config, device)
     std = torch.exp(0.5 * logvar) # only for stochastic sampling
@@ -51,7 +49,12 @@ def main():
         if not t % log_every:
             print('Time step {}'.format(t))
             util.save_image_batch(x, save_path, t)
-        x = sampler(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+        if sampling_method == 'sto':
+            x = diff.sample_stochastic_step(x, model, t, alphas_cumprod[t], betas[t], std[t], ones)
+        elif sampling_method == 'det':
+            x = diff.sample_deterministic_step(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+        else:
+            raise ValueError('Invalid sampling method')
 
 if __name__ == '__main__':
     main()

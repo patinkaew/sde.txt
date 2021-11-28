@@ -5,9 +5,78 @@ Adapted from
     https://github.com/ermongroup/SDEdit/blob/c0ed910a759df68ecc373caa020f6ff7dd65d762/runners/image_editing.py
 """
 
-
 import numpy as np
 import torch
+from torch.nn import functional as F
+
+"""Sampling methods"""
+
+def sample_stochastic_step(x, model, t, alpha_bar, beta, std, ones):
+    """
+    Sample according to equation (3) in DiffusionCLIP.
+        https://arxiv.org/abs/2110.02711
+
+    Note: This is almost identical to VP SDE sampling used in the SDEdit code.
+        https://github.com/ermongroup/SDEdit/blob/c0ed910a759df68ecc373caa020f6ff7dd65d762/runners/image_editing.py#L30
+        Except there is masking in SDEdit.
+
+    Note 2: VP SDE is equivalent to DDPM sampling in Ho et al. 2020.
+    """
+    eps = model(x, t * ones)
+    mean = x - beta / (1 - alpha_bar).sqrt() * eps
+    x = mean / (1 - beta).sqrt() + std * torch.randn_like(x)
+    return x
+
+def sample_deterministic_step(x, model, t, alpha_bar, alpha_bar_prev, ones):
+    """
+    Sample according to equation (5) in DiffusionCLIP.
+        https://arxiv.org/abs/2110.02711
+
+    Note: This is the DDIM sampling procedure.
+        https://arxiv.org/abs/2010.02502
+    """
+    eps = model(x, t * ones)
+    mean = x - (1 - alpha_bar).sqrt() * eps
+    mean = (alpha_bar_prev / alpha_bar).sqrt() * mean
+    x = mean + (1 - alpha_bar_prev).sqrt() * eps
+    return x
+
+def sample_cond_stochastic_step(x, model, t, alpha_bar, beta, std, ones, clip_model, clip_preprocess, text_encoding, cond_scaling):
+    """
+    Sampling like in sample_stochastic_step, but with CLIP to model log p(y|x)
+    """
+    # Calculate the conditional term - modeling grad log p(y | x)
+    x.requires_grad = True
+    image_encoding = clip_model.encode_image(clip_preprocess(x))
+    cond_term = F.cosine_similarity(image_encoding, text_encoding)
+    cond_term_grad = torch.autograd.grad(cond_term, x).detach()
+    x.requires_grad = False
+
+    # Your usual reverse DDPM diffusion step
+    eps = model(x, t * ones)
+    mean = x - beta / (1 - alpha_bar).sqrt() * (eps - cond_scaling * cond_term_grad)
+    x = mean / (1 - beta).sqrt() + std * torch.randn_like(x)
+    return x
+
+def sample_cond_deterministic_step(x, model, t, alpha_bar, alpha_bar_prev, ones, clip_model, clip_preprocess, text_encoding, cond_scaling):
+    """
+    Sampling like in sample_deterministic_step, but with CLIP to model log p(y|x)
+    """
+    # Calculate the conditional term - modeling grad log p(y | x)
+    x.requires_grad = True
+    image_encoding = clip_model.encode_image(clip_preprocess(x))
+    cond_term = F.cosine_similarity(image_encoding, text_encoding)
+    cond_term_grad = torch.autograd.grad(cond_term, x).detach()
+    x.requires_grad = False
+
+    # Your usual reverse DDIM diffusion step
+    eps = model(x, t * ones)
+    mean = x - (1 - alpha_bar).sqrt() * (eps - cond_scaling * cond_term_grad)
+    mean = (alpha_bar_prev / alpha_bar).sqrt() * mean
+    x = mean + (1 - alpha_bar_prev).sqrt() * eps
+    return x
+
+"""Setting up noise variance schedules"""
 
 def get_beta_schedule(beta_start, beta_end, num_diffusion_timesteps):
     betas = np.linspace(beta_start, beta_end,
@@ -16,6 +85,9 @@ def get_beta_schedule(beta_start, beta_end, num_diffusion_timesteps):
     return betas
 
 def get_noise_schedule(config, device):
+    """
+    This noise schedule is for models from SDEdit.
+    """
     betas = get_beta_schedule(
             beta_start=config.diffusion.beta_start,
             beta_end=config.diffusion.beta_end,
@@ -53,33 +125,3 @@ def get_noise_schedule_manual(beta_start, beta_end, num_diffusion_steps, device)
     alphas_cumprod_prev = torch.tensor(alphas_cumprod_prev).to(device=device)
     
     return alphas_cumprod, alphas_cumprod_prev, num_time_steps
-
-
-def sample_stochastic_step(x, model, t, alpha_bar, beta, std, ones):
-    """
-    Sample according to equation (3) in DiffusionCLIP.
-        https://arxiv.org/abs/2110.02711
-
-    Note: This is almost identical to VP SDE sampling used in the SDEdit code.
-        https://github.com/ermongroup/SDEdit/blob/c0ed910a759df68ecc373caa020f6ff7dd65d762/runners/image_editing.py#L30
-
-    TODO Ensure that our noise parameters match notations in the paper.
-    """
-    eps = model(x, t * ones)
-    mean = x - beta / (1 - alpha_bar).sqrt() * eps
-    x = mean / (1 - beta).sqrt() + std * torch.randn_like(x)
-    return x
-
-def sample_deterministic_step(x, model, t, alpha_bar, alpha_bar_prev, ones):
-    """
-    Sample according to equation (5) in DiffusionCLIP.
-        https://arxiv.org/abs/2110.02711
-
-    Note: This is the DDIM sampling procedure.
-        https://arxiv.org/abs/2010.02502
-    """
-    eps = model(x, t * ones)
-    mean = x - (1 - alpha_bar).sqrt() * eps
-    mean = (alpha_bar_prev / alpha_bar).sqrt() * mean
-    x = mean + (1 - alpha_bar_prev).sqrt() * eps
-    return x
