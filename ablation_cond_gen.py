@@ -1,6 +1,9 @@
 """
-Conditional sampling by using CLIP to model log p(y | x)
+Ablation study of parameters for conditional generation by using CLIP to model p(y | x).
 """
+
+import os
+import argparse
 
 import torch
 from torchvision import transforms
@@ -11,24 +14,26 @@ import diffusion as diff
 from model import Model
 import util
 
-def main():
+def run_cond_gen(args):
     
     # Inputs
-    text = "old woman"
+    text = args.text
 
     # Generation parameters
-    config_path = 'config_yml/celeba.yml'
-    ckpt_path = 'model_ckpt/celeba_hq.ckpt'
-    save_path = 'result/ablation-0'
-    batch_size = 1
-    log_every = 50
-    sampling_method = 'sto'  # Don't change to det until I change det to the log cossim conditioning
-    cond_scaling = 1e3  # To sweep
-
+    config_path = args.config
+    ckpt_path = args.ckpt
+    save_path = args.save_path
+    batch_size = args.batch
+    log_every = args.log_every
+    sampling_method = args.sampling_method
+    cond_scaling = args.cond_scaling
+    
     # General setup
     torch.manual_seed(0)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     util.mkdir_if_not_exists(save_path)
+    util.print_arguments(args)
+    util.log_arguments(args, os.path.join(save_path, 'args.txt'))
     config = util.load_config(config_path)
 
     print('Device: {}'.format(device))
@@ -71,7 +76,7 @@ def main():
         if sampling_method == 'sto':
             x = diff.sample_cond_stochastic_step(x, model, t, 
                     alphas_cumprod[t], betas[t], std[t], ones, 
-                    clip_model, clip_preprocess, text_encoding, cond_scaling, True) # not t % log_every
+                    clip_model, clip_preprocess, text_encoding, cond_scaling)
         elif sampling_method == 'det':
             x = diff.sample_cond_deterministic_step(x, model, t, 
                     alphas_cumprod[t], alphas_cumprod_prev[t], ones, 
@@ -81,5 +86,18 @@ def main():
             
     util.save_image_batch(x, save_path, 'final')
 
+def main():
+    parser = argparse.ArgumentParser(description='Ablation study')
+    parser.add_argument('--text', type=str)
+    parser.add_argument('--cond_scaling', type=float, default=1000)
+    parser.add_argument('--save_path', type=str)
+    parser.add_argument('--config', type=str, default='config_yml/celeba.yml')
+    parser.add_argument('--ckpt', type=str, default='model_ckpt/celeba_hq.ckpt')
+    parser.add_argument('--batch', type=int, default=5)
+    parser.add_argument('--log_every', type=int, default=50)
+    parser.add_argument('--sampling_method', type=str, default='sto', choices=['sto']) # TODO add det later
+    args = parser.parse_args()
+    run_cond_gen(args)
+    
 if __name__ == '__main__':
     main()
