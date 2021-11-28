@@ -41,7 +41,7 @@ def sample_deterministic_step(x, model, t, alpha_bar, alpha_bar_prev, ones):
     x = mean + (1 - alpha_bar_prev).sqrt() * eps
     return x
 
-def sample_cond_stochastic_step(x, model, t, alpha_bar, beta, std, ones, clip_model, clip_preprocess, text_encoding, cond_scaling):
+def sample_cond_stochastic_step(x, model, t, alpha_bar, beta, std, ones, clip_model, clip_preprocess, text_encoding, cond_scaling, print_clip=False):
     """
     Sampling like in sample_stochastic_step, but with CLIP to model log p(y|x)
     """
@@ -49,11 +49,15 @@ def sample_cond_stochastic_step(x, model, t, alpha_bar, beta, std, ones, clip_mo
     x.requires_grad = True
     image_encoding = clip_model.encode_image(clip_preprocess(x))
     cond_term = F.cosine_similarity(image_encoding, text_encoding)
-    cond_term_grad = torch.autograd.grad(cond_term, x).detach()
+    cond_term_grad = torch.autograd.grad(cond_term, x, torch.ones_like(cond_term))[0].detach()
     x.requires_grad = False
+    # print('cond_term_grad', cond_term_grad.shape, cond_term_grad.mean(), cond_term_grad.std(), cond_term_grad.requires_grad)
+    if print_clip:
+        print('cosine similarity', cond_term)
 
     # Your usual reverse DDPM diffusion step
     eps = model(x, t * ones)
+    # print('eps', eps.shape, eps.mean(), eps.std(), eps.requires_grad)
     mean = x - beta / (1 - alpha_bar).sqrt() * (eps - cond_scaling * cond_term_grad)
     x = mean / (1 - beta).sqrt() + std * torch.randn_like(x)
     return x

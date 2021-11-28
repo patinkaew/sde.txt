@@ -5,6 +5,7 @@ Conditional sampling by using CLIP to model log p(y | x)
 import torch
 from torchvision import transforms
 import clip
+from tqdm import tqdm
 
 import diffusion as diff
 from model import Model
@@ -13,18 +14,19 @@ import util
 def main():
     
     # Inputs
-    text = "tanned"
+    text = "old woman"
 
     # Generation parameters
     config_path = 'config_yml/celeba.yml'
     ckpt_path = 'model_ckpt/celeba_hq.ckpt'
     save_path = 'result/condgen-celeba-0'
-    batch_size = 5
-    log_every = 100
+    batch_size = 3
+    log_every = 50
     sampling_method = 'sto'
-    cond_scaling = 1e-2  # To sweep
+    cond_scaling = 1e3  # To sweep
 
     # General setup
+    torch.manual_seed(0)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     util.mkdir_if_not_exists(save_path)
     config = util.load_config(config_path)
@@ -60,14 +62,14 @@ def main():
     # Sampling
     x = torch.randn(batch_size, config.data.channels, 
                     config.data.image_size, config.data.image_size, device=device)
-    for t in reversed(range(num_time_steps)):
+    for t in tqdm(reversed(range(num_time_steps)), total=num_time_steps):
         if not t % log_every:
             print('Time step {}'.format(t))
             util.save_image_batch(x, save_path, t)
         if sampling_method == 'sto':
             x = diff.sample_cond_stochastic_step(x, model, t, 
                     alphas_cumprod[t], betas[t], std[t], ones, 
-                    clip_model, clip_preprocess, text_encoding, cond_scaling)
+                    clip_model, clip_preprocess, text_encoding, cond_scaling, not t % log_every)
         elif sampling_method == 'det':
             x = diff.sample_cond_deterministic_step(x, model, t, 
                     alphas_cumprod[t], alphas_cumprod_prev[t], ones, 
