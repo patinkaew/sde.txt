@@ -27,9 +27,10 @@ def run_cond_gen(args):
     log_every = args.log_every
     sampling_method = args.sampling_method
     cond_scaling = args.cond_scaling
+    time_guiding_start = args.guiding_start
     
     # General setup
-    torch.manual_seed(0)
+    torch.manual_seed(236) # 0
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     util.mkdir_if_not_exists(save_path)
     util.print_arguments(args)
@@ -73,16 +74,26 @@ def run_cond_gen(args):
         if not t % log_every:
             print('Time step {}'.format(t))
             util.save_image_batch(x, save_path, t)
-        if sampling_method == 'sto':
-            x = diff.sample_cond_stochastic_step(x, model, t, 
-                    alphas_cumprod[t], betas[t], std[t], ones, 
-                    clip_model, clip_preprocess, text_encoding, cond_scaling)
-        elif sampling_method == 'det':
-            x = diff.sample_cond_deterministic_step(x, model, t, 
-                    alphas_cumprod[t], alphas_cumprod_prev[t], ones, 
-                    clip_model, clip_preprocess, text_encoding, cond_scaling)
+        if t == time_guiding_start:
+            print('t = {}, start CLIP guiding...'.format(t))
+        if t > time_guiding_start:
+            if sampling_method == 'sto':
+                x = diff.sample_stochastic_step(x, model, t, alphas_cumprod[t], betas[t], std[t], ones)
+            elif sampling_method == 'det':
+                x = diff.sample_deterministic_step(x, model, t, alphas_cumprod[t], alphas_cumprod_prev[t], ones)
+            else:
+                raise ValueError('Invalid sampling method')
         else:
-            raise ValueError('Invalid sampling method')
+            if sampling_method == 'sto':
+                x = diff.sample_cond_stochastic_step(x, model, t, 
+                        alphas_cumprod[t], betas[t], std[t], ones, 
+                        clip_model, clip_preprocess, text_encoding, cond_scaling)
+            elif sampling_method == 'det':
+                x = diff.sample_cond_deterministic_step(x, model, t, 
+                        alphas_cumprod[t], alphas_cumprod_prev[t], ones, 
+                        clip_model, clip_preprocess, text_encoding, cond_scaling)
+            else:
+                raise ValueError('Invalid sampling method')
             
     util.save_image_batch(x, save_path, 'final')
 
@@ -90,6 +101,7 @@ def main():
     parser = argparse.ArgumentParser(description='Ablation study')
     parser.add_argument('--text', type=str)
     parser.add_argument('--cond_scaling', type=float, default=1000)
+    parser.add_argument('--guiding_start', type=int, default=1000)
     parser.add_argument('--save_path', type=str)
     parser.add_argument('--config', type=str, default='config_yml/celeba.yml')
     parser.add_argument('--ckpt', type=str, default='model_ckpt/celeba_hq.ckpt')
@@ -98,6 +110,6 @@ def main():
     parser.add_argument('--sampling_method', type=str, default='sto', choices=['sto']) # TODO add det later
     args = parser.parse_args()
     run_cond_gen(args)
-    
+
 if __name__ == '__main__':
     main()
