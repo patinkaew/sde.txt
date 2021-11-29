@@ -3,6 +3,7 @@ import argparse
 import yaml
 import torch
 from torchvision.utils import save_image
+import matplotlib.pyplot as plt
 
 def mkdir_if_not_exists(path):
     if not os.path.exists(path):
@@ -53,3 +54,26 @@ def log_arguments(args, path):
     with open(path, 'w') as f:
         for arg in vars(args):
             f.write('{}: {}\n'.format(arg, getattr(args, arg)))
+
+
+def save_clip_prob(clip_prob_hist, texts, save_path):
+    plt.clf()
+    num_cond_time_step, num_texts = clip_prob_hist.shape
+    for text_id in range(num_texts):
+        plt.plot(range(num_cond_time_step), clip_prob_hist[:, text_id], label=texts[text_id])
+
+    plt.xlabel("conditional time steps")
+    plt.ylabel("CLIP probabilities")
+    plt.title("CLIP probabilities over conditional time steps")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(save_path + "/clip_prob.png", bbox_inches = "tight")
+
+
+def save_clip_prob_batch(clip_prob_hist, texts, save_path):
+    num_cond_time_step, batch_size, num_texts = clip_prob_hist.shape
+    assert len(texts) == num_texts
+    if num_cond_time_step == 0:
+        return
+    for i in range(batch_size):
+        save_clip_prob(clip_prob_hist[:, i, :], texts, save_path + "/{}".format(i))
