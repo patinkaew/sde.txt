@@ -42,3 +42,14 @@ def save_image_batch(image_batch, save_path, t, save_tensor=False):
 def turn_off_model_requires_grad(model):
     for param in model.parameters():
         param.requires_grad = False
+
+
+def print_arguments(args):
+    for arg in vars(args):
+        print('{}: {}'.format(arg, getattr(args, arg)))
+
+
+def log_arguments(args, path):
+    with open(path, 'w') as f:
+        for arg in vars(args):
+            f.write('{}: {}\n'.format(arg, getattr(args, arg)))

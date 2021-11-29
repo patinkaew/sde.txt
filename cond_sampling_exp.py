@@ -19,10 +19,10 @@ def main():
     # Generation parameters
     config_path = 'config_yml/celeba.yml'
     ckpt_path = 'model_ckpt/celeba_hq.ckpt'
-    save_path = 'result/condgen-celeba-0'
-    batch_size = 3
+    save_path = 'result/ablation-0'
+    batch_size = 1
     log_every = 50
-    sampling_method = 'sto'
+    sampling_method = 'sto'  # Don't change to det until I change det to the log cossim conditioning
     cond_scaling = 1e3  # To sweep
 
     # General setup
@@ -58,6 +58,8 @@ def main():
     # Encode text
     text_feature = clip.tokenize([text]).to(device=device)
     text_encoding = clip_model.encode_text(text_feature).detach().clone()
+    
+    print('Begin sampling...')
 
     # Sampling
     x = torch.randn(batch_size, config.data.channels, 
@@ -69,13 +71,15 @@ def main():
         if sampling_method == 'sto':
             x = diff.sample_cond_stochastic_step(x, model, t, 
                     alphas_cumprod[t], betas[t], std[t], ones, 
-                    clip_model, clip_preprocess, text_encoding, cond_scaling, not t % log_every)
+                    clip_model, clip_preprocess, text_encoding, cond_scaling, True) # not t % log_every
         elif sampling_method == 'det':
             x = diff.sample_cond_deterministic_step(x, model, t, 
                     alphas_cumprod[t], alphas_cumprod_prev[t], ones, 
                     clip_model, clip_preprocess, text_encoding, cond_scaling)
         else:
             raise ValueError('Invalid sampling method')
+            
+    util.save_image_batch(x, save_path, 'final')
 
 if __name__ == '__main__':
     main()
