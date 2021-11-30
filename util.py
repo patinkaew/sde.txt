@@ -2,8 +2,15 @@ import os
 import argparse
 import yaml
 import torch
+from torchvision import transforms
 from torchvision.utils import save_image
 import matplotlib.pyplot as plt
+from PIL import Image
+
+to_tensor = transforms.ToTensor()
+
+def load_image(path):
+    return to_tensor(Image.open(path)).float()
 
 def mkdir_if_not_exists(path):
     if not os.path.exists(path):
