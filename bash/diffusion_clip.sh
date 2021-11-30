@@ -3,10 +3,10 @@ python diffusion_clip.py \
 --image cifar10-images/4.png \
 --t0 1000 \
 --s_inv 1000 \
---s_gen 40 \
+--s_gen 1000 \
 --nudge_iter 1000 \
 --id_weight 1. \
---save_path result/diffclip2 \
+--save_path result/diffclip-sanity-gen3 \
 --config config_yml/cifar10.yml \
 --ckpt model_ckpt/cifar10.ckpt \
 --log_every 50

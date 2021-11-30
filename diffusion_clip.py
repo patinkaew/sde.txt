@@ -16,7 +16,6 @@ import diffusion as diff
 from model import Model
 import util
 
-# +
 def run_diffusionclip(args):
     
     # Inputs
@@ -82,12 +81,10 @@ def run_diffusionclip(args):
         x = diff.invert_deterministic_step(x, model, t, alphas_cumprod_inv[t], alphas_cumprod_next_inv[t], ones)
     util.save_image_batch(x, save_path, 'x_t0')
     
-#     x = torch.randn(1, config.data.channels, 
-#                     config.data.image_size, config.data.image_size, device=device)
-#     for t in reversed(range(s_gen)):
-#         x = diff.sample_deterministic_step(x, model, t, alphas_cumprod_gen[t], alphas_cumprod_prev_gen[t], ones)
-#     util.save_image_batch(x, save_path, 'x0_recovered')
-#     raise NotImplementedError
+    for t in reversed(range(s_gen)):
+        x = diff.sample_deterministic_step(x, model, t, alphas_cumprod_gen[t], alphas_cumprod_prev_gen[t], ones)
+    util.save_image_batch(x, save_path, 'x0_recovered')
+    raise NotImplementedError
 
     print('Begin nudging the generative process...')
 
@@ -113,9 +110,6 @@ def run_diffusionclip(args):
         scheduler.step()
             
     util.save_image_batch(x, save_path, 'final')
-
-
-# -
 
 def main():
     parser = argparse.ArgumentParser(description='DiffusionCLIP')

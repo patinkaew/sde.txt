@@ -141,7 +141,8 @@ def get_diffusion_clip_schedule(config, t0, s_inv, s_gen, device):
             beta_end=config.diffusion.beta_end,
             num_diffusion_timesteps=config.diffusion.num_diffusion_timesteps
         )
-    betas = betas[:t0]
+    if t0 is not None:
+        betas = betas[:t0]
 
     # Get forward ("inverse") schedule
     betas_inv = get_beta_schedule(
@@ -169,3 +170,18 @@ def get_diffusion_clip_schedule(config, t0, s_inv, s_gen, device):
     alphas_cumprod_prev_gen = torch.tensor(alphas_cumprod_prev_gen).to(device)
 
     return alphas_cumprod_inv, alphas_cumprod_next_inv, alphas_cumprod_gen, alphas_cumprod_prev_gen
+
+def get_clip_guided_schedule(config, s_gen, device):
+    betas = get_beta_schedule(
+            beta_start=config.diffusion.beta_start,
+            beta_end=config.diffusion.beta_end,
+            num_diffusion_timesteps=s_gen
+        )
+    alphas = 1.0 - betas
+    alphas_cumprod = np.cumprod(alphas, axis=0)
+    alphas_cumprod_prev = np.append(1.0, alphas_cumprod[:-1])
+
+    alphas_cumprod = torch.tensor(alphas_cumprod).to(device=device)
+    alphas_cumprod_prev = torch.tensor(alphas_cumprod_prev).to(device=device)
+
+    return alphas_cumprod, alphas_cumprod_prev
