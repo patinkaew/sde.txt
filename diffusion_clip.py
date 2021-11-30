@@ -17,6 +17,12 @@ from model import Model
 import util
 
 # +
+def print_cuda_memory():
+    t = torch.cuda.get_device_properties(0).total_memory * 9.31e-10
+    r = torch.cuda.memory_reserved(0) * 9.31e-10
+    a = torch.cuda.memory_allocated(0) * 9.31e-10
+    print("total: {:.2} GB reserved: {:.2} GB allocated: {:.2} GB".format(t, r, a))
+
 def run_diffusionclip(args):
     
     # Inputs

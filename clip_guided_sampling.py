@@ -16,6 +16,13 @@ import diffusion as diff
 from model import Model
 import util
 
+# +
+def print_cuda_memory():
+    t = torch.cuda.get_device_properties(0).total_memory * 9.31e-10
+    r = torch.cuda.memory_reserved(0) * 9.31e-10
+    a = torch.cuda.memory_allocated(0) * 9.31e-10
+    print("total: {:.2} GB reserved: {:.2} GB allocated: {:.2} GB".format(t, r, a))
+
 def run_clip_guided_generation(args):
     
     # Inputs
@@ -91,6 +98,9 @@ def run_clip_guided_generation(args):
             
     util.save_image_batch(x, save_path, 'final')
 
+
+# -
+
 def main():
     parser = argparse.ArgumentParser(description='CLIP-guided generation')
     parser.add_argument('--text', type=str)
@@ -100,7 +110,7 @@ def main():
     parser.add_argument('--save_path', type=str)
     parser.add_argument('--config', type=str, default='config_yml/cifar10.yml')
     parser.add_argument('--ckpt', type=str, default='model_ckpt/cifar10.ckpt')
-    parser.add_argument('--batch', type=int, default=5)
+    parser.add_argument('--batch', type=int, default=1)
     parser.add_argument('--log_every', type=int, default=50)
     args = parser.parse_args()
     run_clip_guided_generation(args)

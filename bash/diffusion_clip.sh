@@ -6,7 +6,7 @@ python diffusion_clip.py \
 --s_gen 60 \
 --nudge_iter 1000 \
 --id_weight 1. \
---save_path result/diffclip3 \
+--save_path result/diffclip4 \
 --config config_yml/cifar10.yml \
 --ckpt model_ckpt/cifar10.ckpt \
 --log_every 50
