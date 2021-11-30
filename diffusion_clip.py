@@ -28,6 +28,7 @@ def run_diffusionclip(args):
     s_gen = args.s_gen  # Number of reverse ("generative") steps to go from x_t0 to x0
     lr = args.lr        # Adam optimizer initial learning rate
     nudge_iter = args.nudge_iter  # Number of iterations to finetune the image with CLIP
+    lambda_id = 0.3
 
     # General generation parameters
     config_path = args.config
@@ -73,6 +74,7 @@ def run_diffusionclip(args):
 
     ones = torch.ones(1, device=device)
     x = util.load_image(image_path).unsqueeze(0).to(device) # (1, C, H, W) shape image
+    x0 = x.detach().copy()
     
     # Forward x_0 to x_t0
     for t in range(s_inv):
@@ -94,7 +96,10 @@ def run_diffusionclip(args):
             x_guided = diff.sample_deterministic_step(x_guided, model, t, alphas_cumprod_gen[t], alphas_cumprod_prev_gen[t], ones)
         image_encoding = clip_model.encode_image(clip_preprocess(x_guided))
         clip_loss = 1. - F.cosine_similarity(image_encoding, text_encoding)
-        clip_loss.backward()
+        # clip_loss.backward()
+        identity_loss = lambda_id * (x_guided - x0).abs().mean()
+        loss = clip_loss + identity_loss
+        loss.backward()
         optimizer.step()
         optimizer.zero_grad()
         scheduler.step()
