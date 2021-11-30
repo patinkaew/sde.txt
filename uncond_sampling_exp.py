@@ -15,13 +15,13 @@ import util
 def main():
 
     # Arguments
-    config_path = 'config_yml/celeba.yml'
-    ckpt_path = 'model_ckpt/celeba_hq.ckpt'
-    save_path = 'result/celeba-det-2'
-    batch_size = 5
+    config_path = 'config_yml/cifar10.yml'
+    ckpt_path = 'model_ckpt/cifar10.ckpt'
+    save_path = 'result/ddim_cifar10_0'
+    batch_size = 3
     log_every = 100
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    sampling_method = 'sto'
+    sampling_method = 'det'
 
     print('Device: {}'.format(device))
     print('Set up...')

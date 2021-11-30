@@ -141,7 +141,7 @@ def get_diffusion_clip_schedule(config, t0, s_inv, s_gen, device):
             beta_end=config.diffusion.beta_end,
             num_diffusion_timesteps=config.diffusion.num_diffusion_timesteps
         )
-    betas = betas[t0:]
+    betas = betas[:t0]
 
     # Get forward ("inverse") schedule
     betas_inv = get_beta_schedule(
@@ -151,7 +151,7 @@ def get_diffusion_clip_schedule(config, t0, s_inv, s_gen, device):
         )
     alphas_inv = 1.0 - betas_inv
     alphas_cumprod_inv = np.cumprod(alphas_inv, axis=0)
-    alphas_cumprod_next_inv = np.append(alphas_cumprod_inv[1:], 1.0)
+    alphas_cumprod_next_inv = np.append(alphas_cumprod_inv[1:], 1e-5)
 
     # Get reverse ("generative") schedule
     betas_gen = get_beta_schedule(

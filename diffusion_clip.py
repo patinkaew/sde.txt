@@ -16,6 +16,7 @@ import diffusion as diff
 from model import Model
 import util
 
+# +
 def run_diffusionclip(args):
     
     # Inputs
@@ -28,7 +29,7 @@ def run_diffusionclip(args):
     s_gen = args.s_gen  # Number of reverse ("generative") steps to go from x_t0 to x0
     lr = args.lr        # Adam optimizer initial learning rate
     nudge_iter = args.nudge_iter  # Number of iterations to finetune the image with CLIP
-    lambda_id = 0.3
+    lambda_id = args.id_weight
 
     # General generation parameters
     config_path = args.config
@@ -37,7 +38,7 @@ def run_diffusionclip(args):
     log_every = args.log_every
     
     # General setup
-    torch.manual_seed(236) # 0
+    torch.manual_seed(77) # 0
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     util.mkdir_if_not_exists(save_path)
     util.print_arguments(args)
@@ -74,12 +75,19 @@ def run_diffusionclip(args):
 
     ones = torch.ones(1, device=device)
     x = util.load_image(image_path).unsqueeze(0).to(device) # (1, C, H, W) shape image
-    x0 = x.detach().copy()
+    x0 = x.detach().clone()
     
     # Forward x_0 to x_t0
     for t in range(s_inv):
         x = diff.invert_deterministic_step(x, model, t, alphas_cumprod_inv[t], alphas_cumprod_next_inv[t], ones)
     util.save_image_batch(x, save_path, 'x_t0')
+    
+#     x = torch.randn(1, config.data.channels, 
+#                     config.data.image_size, config.data.image_size, device=device)
+#     for t in reversed(range(s_gen)):
+#         x = diff.sample_deterministic_step(x, model, t, alphas_cumprod_gen[t], alphas_cumprod_prev_gen[t], ones)
+#     util.save_image_batch(x, save_path, 'x0_recovered')
+#     raise NotImplementedError
 
     print('Begin nudging the generative process...')
 
@@ -106,6 +114,9 @@ def run_diffusionclip(args):
             
     util.save_image_batch(x, save_path, 'final')
 
+
+# -
+
 def main():
     parser = argparse.ArgumentParser(description='DiffusionCLIP')
     parser.add_argument('--text', type=str)
@@ -115,6 +126,7 @@ def main():
     parser.add_argument('--s_gen', type=int, default=6)
     parser.add_argument('--nudge_iter', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=1e-6)
+    parser.add_argument('--id_weight', type=float, default=0.5)
     parser.add_argument('--save_path', type=str)
     parser.add_argument('--config', type=str, default='config_yml/celeba.yml')
     parser.add_argument('--ckpt', type=str, default='model_ckpt/celeba_hq.ckpt')

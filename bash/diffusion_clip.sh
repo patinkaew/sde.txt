@@ -1,7 +1,12 @@
 python diffusion_clip.py \
---text "red Ferrari" \
+--text "red car" \
 --image cifar10-images/4.png \
+--t0 1000 \
+--s_inv 1000 \
+--s_gen 40 \
 --nudge_iter 1000 \
---save_path result/diffclip0 \
+--id_weight 1. \
+--save_path result/diffclip2 \
 --config config_yml/cifar10.yml \
---ckpt model_ckpt/cifar10.ckpt
+--ckpt model_ckpt/cifar10.ckpt \
+--log_every 50
