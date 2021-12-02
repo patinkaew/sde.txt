@@ -1,0 +1,39 @@
+python constrast_cond_gen.py \
+--seed 236 \
+--use_seed 1 \
+--target_text "airplane" \
+--constrast_texts "automobile, bird, cat, deer, dog, frog, horse, ship, truck" \
+--cond_type "contrastive" \
+--cond_scaling 100 \
+--guiding_start 1000 \
+--config config_yml/cifar10.yml \
+--ckpt model_ckpt/cifar10.ckpt \
+--batch 100 \
+--log_every 100 \
+--save_path constrast_result/cifar10_contrast_final
+python constrast_cond_gen.py \
+--seed 236 \
+--use_seed 1 \
+--target_text "airplane" \
+--constrast_texts "automobile, bird, cat, deer, dog, frog, horse, ship, truck" \
+--cond_type "spherical" \
+--cond_scaling 1000 \
+--guiding_start 1000 \
+--config config_yml/cifar10.yml \
+--ckpt model_ckpt/cifar10.ckpt \
+--batch 100 \
+--log_every 100 \
+--save_path constrast_result/cifar10_spherical_final
+python constrast_cond_gen.py \
+--seed 236 \
+--use_seed 1 \
+--target_text "airplane" \
+--constrast_texts "automobile, bird, cat, deer, dog, frog, horse, ship, truck" \
+--cond_type "spherical" \
+--cond_scaling 1000 \
+--guiding_start -2 \
+--config config_yml/cifar10.yml \
+--ckpt model_ckpt/cifar10.ckpt \
+--batch 100 \
+--log_every 100 \
+--save_path constrast_result/cifar10_null_final
