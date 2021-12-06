@@ -10,12 +10,18 @@ The code has been tested for Python version 3.7.12. The following are the requir
 - pytorch = 1.10.0
 - torchvision = 0.11.1+cu111
 - Pillow = 8.4.0
+- PyYAML = 6.0
+- tqdm = 4.62.3
+- [clip](https://github.com/openai/CLIP) = 1.0
 - [torchmetrics](https://torchmetrics.readthedocs.io/en/latest/) = 0.6.0
 - [torch-fidelity](https://torch-fidelity.readthedocs.io/en/latest/) = 0.3.0
+We also provide 'requirement.txt' file.
 
 ## Abstract
 
 ## Content
+Here are important files:
+
 
 ## Reference and Acknowledgement
 If you find this repository useful for your research, please cite the following work,\
