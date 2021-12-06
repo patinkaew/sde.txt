@@ -52,18 +52,35 @@ def invert_deterministic_step(x, model, t, alpha_bar, alpha_bar_next, ones):
     x = mean + (1 - alpha_bar_next).sqrt() * eps
     return x
 
-def sample_cond_stochastic_step(x, model, t, alpha_bar, beta, std, ones, clip_model, clip_preprocess, text_features, cond_scaling, print_clip=False):
+def spherical_dist_loss(x, y):
+    x = F.normalize(x, dim=-1)
+    y = F.normalize(y, dim=-1)
+    return (x - y).norm(dim=-1).div(2).arcsin().pow(2).mul(2)
+
+
+def sample_cond_stochastic_step(x, model, t, alpha_bar, beta, std, ones, clip_model, clip_preprocess, text_features, cond_scaling, cond_type, print_clip=False):
     """
     Sampling like in sample_stochastic_step, but with CLIP to model log p(y|x)
     """
     # Calculate the conditional term - modeling grad log p(y | x)
     x.requires_grad = True
-    #image_encoding = clip_model.encode_image(clip_preprocess(x))
-    #cond_term = torch.log(F.cosine_similarity(image_encoding, text_encoding))
-    image = clip_preprocess(x)
-    logits_per_image, logits_per_text = clip_model(image, text_features)
+    images = clip_preprocess(x)
+    logits_per_image, logits_per_text = clip_model(images, text_features)
     probs_per_image = logits_per_image.softmax(dim=-1)
-    cond_term = torch.log(probs_per_image[:, 0]) # target text will always be the first
+    
+    if cond_type == 'contrastive':
+        cond_term = torch.log(probs_per_image[:, 0]) # target text will always be the first
+    elif cond_type == 'single':
+        image_embeds = clip_model.encode_image(images)
+        text_embeds = clip_model.encode_text(text_features)
+        cond_term = torch.log(torch.sigmoid(F.cosine_similarity(image_embeds, text_embeds[0].unsqueeze(0))))
+    elif cond_type == 'spherical':
+        image_embeds = clip_model.encode_image(images)
+        text_embeds = clip_model.encode_text(text_features)
+        cond_term = -spherical_dist_loss(image_embeds, text_embeds[0, :])
+    else:
+        raise NotImplementedError
+        
     cond_term_grad = torch.autograd.grad(cond_term, x, torch.ones_like(cond_term))[0].detach()
     x.requires_grad = False
     # print('cond_term_grad', cond_term_grad.shape, cond_term_grad.mean(), cond_term_grad.std(), cond_term_grad.requires_grad)
