@@ -15,7 +15,8 @@ The code has been tested for Python version 3.7.12. The following are the requir
 - [clip](https://github.com/openai/CLIP) = 1.0
 - [torchmetrics](https://torchmetrics.readthedocs.io/en/latest/) = 0.6.0
 - [torch-fidelity](https://torch-fidelity.readthedocs.io/en/latest/) = 0.3.0
-We also provide 'requirement.txt' file.
+
+We also provide `requirements.txt` file which can be used to install required packages with `pip` command.
 
 ## Abstract
 
