@@ -1,0 +1,9 @@
+clip==1.0
+matplotlib==3.5.0
+numpy==1.19.5
+Pillow==8.4.0
+PyYAML==6.0
+torch==1.10.0
+torchmetrics==0.6.0
+torchvision==0.11.1+cu111
+tqdm==4.62.3
