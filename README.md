@@ -51,7 +51,7 @@ We use model chekpoints and config file from [SDEdit: Image Synthesis and Editin
 We wrote prototype codes in jupyter notebooks and we would like to thank the tutorial [Google Cloud Setup and Tutorial](https://github.com/cs231n/gcloud) from CS 231N: Convolutional Neural Networks for Visiual Recognition class at Stanford University.
 
 ### Acknowledgement
-This project will not be possible without supports from many individuals. We would like to give special thank to our TA project mentor Kelly He for her guideline throughout the project development. We would like to thank all CS 236 instructors and staff for this opportunity,  thoughtful instructions, and great supports.
+This project would not be possible without supports from many individuals. We would like to give special thank to our TA project mentor Kelly He for her guideline throughout the project development. We would like to thank all CS 236 instructors and staff for this opportunity,  thoughtful instructions, and great supports.
 
 ## Contact
 
