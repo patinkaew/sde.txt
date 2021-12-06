@@ -55,10 +55,10 @@ If you find this repository useful for your research, please cite the following 
 This experiment is based on/inspired by
 
 ### Inception Score (IS) and Kernel Inception Score (KID) Demo
-We wrote this demo to test evaluation metrics (IS/KID). We use pretrain GAN models from [PyTorch Pretrained GANs](https://github.com/lukemelas/pytorch-pretrained-gans). If you wish to run this demo, you will need to install [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) since the pretrain GANs repository uses this library. Since we use models trained on ImageNet dataset, we reference label file from [imagenet 1000 class idx to human readable labels](https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a). For real image referenc, we use downloader from [ImageNet Downloader](https://github.com/mf1024/ImageNet-Datasets-Downloader).
+We wrote this demo to test evaluation metrics (IS/KID). We use pretrain GAN models from [PyTorch Pretrained GANs](https://github.com/lukemelas/pytorch-pretrained-gans). If you wish to run this demo, you will need to install [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) since the pretrain GANs repository uses this library. Since we use models trained on ImageNet dataset, we reference label file from [imagenet 1000 class idx to human readable labels](https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a). For real image references, we use a downloader from [ImageNet Downloader](https://github.com/mf1024/ImageNet-Datasets-Downloader).
 
 ### CIFAR 10 
-We use model checkpoint from DDPM model included in [PyTorch pretrained Diffusion Models](https://github.com/pesser/pytorch_diffusion) repository. We use config file, inclduing noise scheduling from [Denoising Diffusion Implicit Models (DDIM)](https://github.com/ermongroup/ddim). For real image reference, we use pytorch dataloader and PIL to convert to PNG images.
+We use model checkpoint from DDPM model included in [PyTorch pretrained Diffusion Models](https://github.com/pesser/pytorch_diffusion) repository. We use config file, inclduing noise scheduling from [Denoising Diffusion Implicit Models (DDIM)](https://github.com/ermongroup/ddim). For real image references, we use pytorch dataloader and PIL to convert to PNG images.
 
 ### CELEBA-HQ, LSUN Bedroom, and LSUN Church
 We use model chekpoints and config file from [SDEdit: Image Synthesis and Editing with Stochastic Differential Equations](https://github.com/ermongroup/SDEdit).
