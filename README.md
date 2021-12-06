@@ -41,9 +41,10 @@ We use model checkpoint from DDPM model included in [PyTorch pretrained Diffusio
 We use model chekpoints and config file from [SDEdit: Image Synthesis and Editing with Stochastic Differential Equations](https://github.com/ermongroup/SDEdit).
 
 ### Development
-We wrote prototype codes in jupyter notebooks and we would like to acknowledge this tutorial [Google Cloud Setup and Tutorial](https://github.com/cs231n/gcloud) from CS 231N: Convolutional Neural Networks for Visiual Recognition class at Stanford University.
+We wrote prototype codes in jupyter notebooks and we would like to thank the tutorial [Google Cloud Setup and Tutorial](https://github.com/cs231n/gcloud) from CS 231N: Convolutional Neural Networks for Visiual Recognition class at Stanford University.
 
 ### Acknowledgement
+This project will not be possible without support from many. We would like to give special thank to our TA project mentor Kelly He for her guideline throughout the project development and experiments. We would like to thank all CS 236 instructors and staff for this opportunity, instructions, and support.
 
 ## Contact
 
