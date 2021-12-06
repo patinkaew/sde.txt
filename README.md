@@ -21,7 +21,22 @@ We also provide `requirements.txt` file which can be used to install required pa
 ## Abstract
 
 ## Content
-Here are important files:
+Here are descriptions for files:
+* `bash` contains the bash scripts used for running experiments, including generating images, downloading real images, evaluating metrics, etc.
+* `config_ym` contains .yml config files for running Diffusion Models, including dataset specification, model parameters, diffuse noise scheduling.
+* `model.py`: neural netowrk architecture for diffusion models.
+* `diffusion.py`: CLIP-conditional sampling methods (constrastive / spherical distance)
+* `diffusion_clip.py`: CLIP-guided unconditional sampling methods
+* `ablation_cond_gen.py` generate image samples with partial CLIP-conditional score: unconditional diffusion for some steps and turn on conditional diffusion to generate final images. This is used in preliminary experiment.
+* `constrast_cond_gen.py` generate images samples with CLIP conditional score. This is updated file from `ablation_cond_gen.py` with more sampling configurtions and conditional score models.
+* `clip_guided_sampling.py`
+* `uncond_sampling_exp.py`
+* `collect_final_images.py`
+* `compute_KID_score_cifar10.py`
+* `Inception Metrics.ipynb`
+* `clip_demo.py'
+* `util.py`
+* `diffusion-txt.pdf`: project report
 
 
 ## Reference and Acknowledgement
@@ -39,12 +54,12 @@ If you find this repository useful for your research, please cite the following 
 This experiment is based on/inspired by
 
 ### Inception Score (IS) and Kernel Inception Score (KID) Demo
-We wrote this demo to test evaluation metrics (IS/KID). We use pretrain GAN models from [PyTorch Pretrained GANs](https://github.com/lukemelas/pytorch-pretrained-gans). If you wish to run this demo, you will need to install [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) since the pretrain GANs repository uses this library. Since we use models trained on ImageNet dataset, we reference label file from [imagenet 1000 class idx to human readable labels](https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a). For real image referenc, we use downloader from [ImageNet Downloader](https://github.com/mf1024/ImageNet-Datasets-Downloader)
+We wrote this demo to test evaluation metrics (IS/KID). We use pretrain GAN models from [PyTorch Pretrained GANs](https://github.com/lukemelas/pytorch-pretrained-gans). If you wish to run this demo, you will need to install [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) since the pretrain GANs repository uses this library. Since we use models trained on ImageNet dataset, we reference label file from [imagenet 1000 class idx to human readable labels](https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a). For real image referenc, we use downloader from [ImageNet Downloader](https://github.com/mf1024/ImageNet-Datasets-Downloader).
 
-### CIFAR10 
+### CIFAR 10 
 We use model checkpoint from DDPM model included in [PyTorch pretrained Diffusion Models](https://github.com/pesser/pytorch_diffusion) repository. We use config file, inclduing noise scheduling from [Denoising Diffusion Implicit Models (DDIM)](https://github.com/ermongroup/ddim). For real image reference, we use pytorch dataloader and PIL to convert to PNG images.
 
-### CELEBA-HQ 256 x 256, LSUN Bedroom, LSUN Church
+### CELEBA-HQ, LSUN Bedroom, and LSUN Church
 We use model chekpoints and config file from [SDEdit: Image Synthesis and Editing with Stochastic Differential Equations](https://github.com/ermongroup/SDEdit).
 
 ### Development
