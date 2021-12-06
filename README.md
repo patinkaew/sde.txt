@@ -41,7 +41,7 @@ Here are descriptions for files:
 
 
 ## Reference and Acknowledgement
-If you find this repository useful for your research, please cite the following work,\
+If you find this repository useful for your research, please cite the following work,
 
 ```
 @misc{sde.txt,
@@ -61,7 +61,7 @@ We wrote this demo to test evaluation metrics (IS/KID). We use pretrain GAN mode
 We use model checkpoint from DDPM model included in [PyTorch pretrained Diffusion Models](https://github.com/pesser/pytorch_diffusion) repository. We use config file, inclduing noise scheduling from [Denoising Diffusion Implicit Models (DDIM)](https://github.com/ermongroup/ddim). For real image references, we use pytorch dataloader and PIL to convert to PNG images.
 
 ### CELEBA-HQ, LSUN Bedroom, and LSUN Church
-We use model chekpoints and config file from [SDEdit: Image Synthesis and Editing with Stochastic Differential Equations](https://github.com/ermongroup/SDEdit).
+We use model chekpoints and config files from [SDEdit: Image Synthesis and Editing with Stochastic Differential Equations](https://github.com/ermongroup/SDEdit).
 
 ### Development
 We write prototype codes in jupyter notebooks and we would like to thank the tutorial [Google Cloud Setup and Tutorial](https://github.com/cs231n/gcloud) from CS 231N: Convolutional Neural Networks for Visiual Recognition class at Stanford University.
