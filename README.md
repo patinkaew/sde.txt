@@ -19,6 +19,7 @@ The code has been tested for Python version 3.7.12. The following are the requir
 We also provide `requirements.txt` file which can be used to install required packages with `pip` command.
 
 ## Abstract
+Text-guided image generation is a conditional generative task: producing images capturing the semantic meaning of the input text prompt. In this project, we explore the capabilities of combining publicly available pre-trained models to tackle text-guided image synthesis. Specifically, we explore recently introduced diffusion and score-based generative models, which show comparable or better performances in many generative tasks compared to Generative Adversarial Network (GANs), but have more stable training methods. We then use Open AI's CLIP model to guide image generation. We propose two approaches: (1) Contrastive conditional diffusion sampling using one target together with multiple distractive prompts to improve sampling, and (2) CLIP-guided unconditional sampling using the gradient from CLIP-loss to nudge latent image to the desired location. We demonstrate better performance,  easier and faster sampling for the first approach compared to a similar approach without contrastive prompts. The second approach shows a crucial need for an original image, rather than a completely noisy image, for successful sampling. Our project shows promising potentials in utilizing pre-trained models to generate high-quality text-guided images without training models to tackle the task specifically.
 
 ## Content
 Here are descriptions for files:
