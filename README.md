@@ -27,8 +27,8 @@ Here are descriptions for files:
 * `model.py`: neural netowrk architecture for diffusion models.
 * `diffusion.py`: CLIP-conditional sampling methods (constrastive / spherical distance)
 * `diffusion_clip.py`: CLIP-guided unconditional sampling methods
-* `ablation_cond_gen.py` generate image samples with partial CLIP-conditional score: unconditional diffusion for some steps and turn on conditional diffusion to generate final images. This is used in preliminary experiment.
-* `constrast_cond_gen.py` generate images samples with CLIP conditional score. This is updated file from `ablation_cond_gen.py` with more sampling configurtions and conditional score models.
+* `ablation_cond_gen.py` generates image samples with partial CLIP-conditional score: unconditional diffusion for some steps and turn on conditional diffusion to generate final images. This is used in preliminary experiment.
+* `constrast_cond_gen.py` generates images samples with CLIP conditional score. This is updated file from `ablation_cond_gen.py` with more sampling configurtions and conditional score models.
 * `clip_guided_sampling.py`
 * `uncond_sampling_exp.py`
 * `collect_final_images.py`
