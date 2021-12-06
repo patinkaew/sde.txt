@@ -1,0 +1,22 @@
+python constrast_cond_gen.py \
+--seed 236 \
+--use_seed 1 \
+--target_text "airplane" \
+--constrast_texts "automobile, bird, cat, deer, dog, frog, horse, ship, truck" \
+--cond_type "spherical" \
+--cond_scaling 1000 \
+--guiding_start 1000 \
+--config config_yml/cifar10.yml \
+--ckpt model_ckpt/cifar10.ckpt \
+--save_path constrast_result/cifar10_constrast_sph_0_start_1000_scale_1000
+python constrast_cond_gen.py \
+--seed 236 \
+--use_seed 1 \
+--target_text "airplane" \
+--constrast_texts "automobile, bird, cat, deer, dog, frog, horse, ship, truck" \
+--cond_type "spherical" \
+--cond_scaling 500 \
+--guiding_start 1000 \
+--config config_yml/cifar10.yml \
+--ckpt model_ckpt/cifar10.ckpt \
+--save_path constrast_result/cifar10_constrast_sph_0_start_1000_scale_500
