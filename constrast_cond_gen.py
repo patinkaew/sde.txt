@@ -1,5 +1,5 @@
 """
-Ablation study of parameters for conditional generation by using CLIP to model p(y | x).
+Constrastive study of parameters for conditional generation by using CLIP to model p(y | x).
 """
 
 import os
@@ -29,6 +29,7 @@ def run_cond_gen(args):
     sampling_method = args.sampling_method
     cond_scaling = args.cond_scaling
     time_guiding_start = args.guiding_start
+    cond_type = args.cond_type
     
     # Seed parameters
     seed = args.seed
@@ -75,8 +76,10 @@ def run_cond_gen(args):
     print('Process text prompts...')
     target_text = args.target_text
     constrast_texts = args.constrast_texts
-    constrast_texts_list = [each_text.strip() for each_text in constrast_texts.split(',')]
-    texts = [target_text] + constrast_texts_list
+    texts = [target_text]
+    if len(constrast_texts) > 0:
+        constrast_texts_list = [each_text.strip() for each_text in constrast_texts.split(',')]
+        texts += constrast_texts_list
     text_features = clip.tokenize(texts).to(device)
     print('target_text: {} constrast_texts: {}'.format(texts[0], texts[1:]))
     
@@ -87,6 +90,8 @@ def run_cond_gen(args):
     x = torch.randn(batch_size, config.data.channels, 
                     config.data.image_size, config.data.image_size, device=device)
     for t in tqdm(reversed(range(num_time_steps)), total=num_time_steps):
+        #if t == num_time_steps -2:
+        #    return 0
         if not t % log_every:
             print('Time step {}'.format(t))
             util.save_image_batch(x, save_path, t)
@@ -103,7 +108,7 @@ def run_cond_gen(args):
             if sampling_method == 'sto':
                 x, clip_prob = diff.sample_cond_stochastic_step(x, model, t, 
                         alphas_cumprod[t], betas[t], std[t], ones, 
-                        clip_model, clip_preprocess, text_features, cond_scaling)
+                        clip_model, clip_preprocess, text_features, cond_scaling, cond_type)
             elif sampling_method == 'det':
                 x = diff.sample_cond_deterministic_step(x, model, t, 
                         alphas_cumprod[t], alphas_cumprod_prev[t], ones, 
@@ -116,13 +121,14 @@ def run_cond_gen(args):
     util.save_clip_prob_batch(clip_prob_hist, texts, save_path) 
 
 def main():
-    parser = argparse.ArgumentParser(description='Constrast study')
+    parser = argparse.ArgumentParser(description='Contrastive study')
     parser.add_argument('--seed', type=int, default=236)
     parser.add_argument('--use_seed', type=bool, default=1)
     parser.add_argument('--target_text', type=str)
-    parser.add_argument('--constrast_texts', type=str)
+    parser.add_argument('--constrast_texts', type=str, default='')
     parser.add_argument('--cond_scaling', type=float, default=1000)
     parser.add_argument('--guiding_start', type=int, default=1000)
+    parser.add_argument('--cond_type', type=str, default='contrastive')
     parser.add_argument('--save_path', type=str)
     parser.add_argument('--config', type=str, default='config_yml/celeba.yml')
     parser.add_argument('--ckpt', type=str, default='model_ckpt/celeba_hq.ckpt')
