@@ -31,7 +31,7 @@ Here are descriptions for files:
 * `constrast_cond_gen.py` generates images samples with CLIP conditional score. This is updated file from `ablation_cond_gen.py` with more sampling configurtions and conditional score models.
 * `clip_guided_sampling.py`generates image samples with CLIP-guided unconditional sampling.
 * `uncond_sampling_exp.py` generates image samples with unconditiol diffusion. This is used for preliminary experiment. Later generation codes based on `ablation_cond_gen.py` can also generate unconditional samples.
-* `collect_final_images.py` copies all final images from image batch into one folder for analyzing results
+* `collect_final_images.py` copies all final images from image batch into one folder for analyzing final images and evaluating metrics.
 * `compute_KID_score_cifar10.py` calculates KID score for CIFAR 10 experiment. This code can also be used to download CIFAR 10 real image reference.
 * `Inception Metrics.ipynb`: a Jupyter notebook demo on how to interact with Inception metrics (IS/KID) implemented in torchmetrics library.
 * `clip_demo.py': a demo on how to compute probabilities using CLIP model.
