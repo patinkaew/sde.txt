@@ -38,6 +38,7 @@ Here are descriptions for files:
 * `clip_demo.py': a demo on how to compute probabilities using CLIP model.
 * `util.py`: other useful utiliy functions including reading config files, saving intermediate/final image samples, ploting CLIP probabilities to monitor image generation, etc.
 * `diffusion-txt.pdf`: a project report.
+* `diffusion-txt-poster.pdf`: a project poster.
 
 
 ## Reference and Acknowledgement
